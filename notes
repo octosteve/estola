@@ -1,0 +1,4 @@
+config = Application.get_env(:estola, :message_store)
+{:ok, pid} = Postgrex.start_link(config)
+Postgrex.query!(pid, "SET search_path TO message_store,public;",[])
+Postgrex.query!(pid, "SELECT * FROM get_stream_messages('someStream-123', 0, 1000)", [])
