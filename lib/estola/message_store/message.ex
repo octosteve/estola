@@ -8,8 +8,8 @@ defmodule Estola.MessageStore.Message do
       type: type,
       position: position,
       global_position: global_position,
-      data: data,
-      metadata: metadata,
+      data: data |> Jason.decode!(),
+      metadata: metadata |> Kernel.||('{}') |> Jason.decode!(),
       time: time
     )
   end

@@ -17,6 +17,6 @@ defmodule Estola.MessageStore.GetStreamMessagesTest do
     {:ok, message} = GetStreamMessages.new(%{stream_name: "stream-123"})
 
     assert message |> GetStreamMessages.to_sql() ==
-             "SELECT get_stream_messages('stream-123', 0, 1000, NULL);"
+             ~s[SELECT get_stream_messages(stream_name => 'stream-123', "position" => 0, batch_size => 1000, condition => NULL);]
   end
 end

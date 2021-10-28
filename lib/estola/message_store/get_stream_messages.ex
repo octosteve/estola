@@ -2,7 +2,7 @@ defmodule Estola.MessageStore.GetStreamMessages do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @field_order [:stream_name, :position, :batch_size, :condition]
+  @field_order ~w[stream_name position batch_size condition]a
   @primary_key false
   @function_name :get_stream_messages
 
@@ -21,7 +21,7 @@ defmodule Estola.MessageStore.GetStreamMessages do
 
   def changeset(message, params \\ %{}) do
     message
-    |> cast(params, [:stream_name, :position, :batch_size, :condition])
+    |> cast(params, ~w[stream_name position batch_size condition]a)
     |> validate_required([:stream_name])
     |> validate_valid_stream_name
   end
@@ -39,6 +39,7 @@ defmodule Estola.MessageStore.GetStreamMessages do
     fields =
       for field <- @field_order, reduce: "" do
         acc ->
+          IO.inspect(field, label: "Fierd")
           value = Map.get(struct, field)
           acc <> cast_field(field, value) <> ", "
       end
@@ -50,14 +51,28 @@ defmodule Estola.MessageStore.GetStreamMessages do
     "SELECT #{@function_name}(#{fields});"
   end
 
-  def cast_field(_type, nil), do: "NULL"
-  def cast_field(_type, field) when is_map(field), do: "'#{field |> Jason.encode!()}'"
+  def cast_field(:position, nil) do
+    "#{cast_to_named_parameter(:position)} => NULL"
+  end
+
+  def cast_field(type, nil) do
+    "#{cast_to_named_parameter(type)} => NULL"
+  end
+
+  def cast_field(type, field) when is_map(field),
+    do: "#{cast_to_named_parameter(type)} => '#{field |> Jason.encode!()}'"
 
   def cast_field(type, field) do
-    case __schema__(:type, type) do
-      :integer -> field |> to_string
-      :binary_id -> "'#{field}'"
-      :string -> "'#{field}'"
-    end
+    casted =
+      case __schema__(:type, type) do
+        :integer -> field |> to_string
+        :binary_id -> "'#{field}'"
+        :string -> "'#{field}'"
+      end
+
+    "#{cast_to_named_parameter(type)} => #{casted}"
   end
+
+  def cast_to_named_parameter(:position), do: "\"position\""
+  def cast_to_named_parameter(type), do: type |> to_string
 end

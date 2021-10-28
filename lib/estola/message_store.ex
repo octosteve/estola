@@ -14,6 +14,10 @@ defmodule Estola.MessageStore do
     GenServer.call(__MODULE__, {:get_stream_messages, message})
   end
 
+  def get_category_messages(message) do
+    GenServer.call(__MODULE__, {:get_category_messages, message})
+  end
+
   def init(:ok) do
     {:ok, pid} = Postgrex.start_link(@config)
     {:ok, %{pid: pid}, {:continue, :configure}}
@@ -49,6 +53,25 @@ defmodule Estola.MessageStore do
             state.pid,
             message_struct
             |> Estola.MessageStore.GetStreamMessages.to_sql(),
+            []
+          ).rows
+          |> Enum.map(&Estola.MessageStore.Message.new/1)
+
+        {:reply, result, state}
+
+      {:error, changeset} ->
+        {:reply, changeset, state}
+    end
+  end
+
+  def handle_call({:get_category_messages, message}, _reply, state) do
+    case message |> Estola.MessageStore.GetCategoryMessages.new() do
+      {:ok, message_struct} ->
+        result =
+          Postgrex.query!(
+            state.pid,
+            message_struct
+            |> Estola.MessageStore.GetCategoryMessages.to_sql(),
             []
           ).rows
           |> Enum.map(&Estola.MessageStore.Message.new/1)

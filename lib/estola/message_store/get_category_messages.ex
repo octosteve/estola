@@ -1,17 +1,19 @@
-defmodule Estola.MessageStore.WriteMessage do
+defmodule Estola.MessageStore.GetCategoryMessages do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @field_order [:id, :stream_name, :type, :data, :metadata, :expected_version]
-  @primary_key {:id, :binary_id, autogenrate: false}
-  @function_name :write_message
+  @field_order ~w[category position batch_size correlation consumer_group_member consumer_group_size condition]a
+  @primary_key false
+  @function_name :get_category_messages
 
   embedded_schema do
-    field(:stream_name, :string)
-    field(:type, :string)
-    field(:data, :map)
-    field(:metadata, :map)
-    field(:expected_version, :integer)
+    field(:category, :string)
+    field(:position, :integer, default: 1)
+    field(:batch_size, :integer, default: 1000)
+    field(:correlation, :string)
+    field(:consumer_group_member, :integer)
+    field(:consumer_group_size, :integer)
+    field(:condition, :string)
   end
 
   def new(params) do
@@ -22,32 +24,11 @@ defmodule Estola.MessageStore.WriteMessage do
 
   def changeset(message, params \\ %{}) do
     message
-    |> cast(params, [:id, :stream_name, :type, :data, :metadata, :expected_version])
-    |> validate_required([:stream_name, :type, :data])
-    |> validate_valid_id
-    |> validate_valid_stream_name
-  end
-
-  def validate_valid_id(changeset) do
-    case changeset
-         |> get_change(:id)
-         |> Ecto.UUID.cast() do
-      :error ->
-        changeset
-        |> add_error(:id, "invalid_uuid")
-
-      _ ->
-        changeset
-    end
-  end
-
-  def validate_valid_stream_name(changeset) do
-    if changeset |> get_change(:stream_name, "") |> String.contains?("-") do
-      changeset
-    else
-      changeset
-      |> add_error(:stream_name, "invalid_stream_name")
-    end
+    |> cast(
+      params,
+      ~w[category position batch_size correlation consumer_group_member consumer_group_size condition]a
+    )
+    |> validate_required([:category])
   end
 
   def to_sql(%__MODULE__{} = struct) do
@@ -83,5 +64,6 @@ defmodule Estola.MessageStore.WriteMessage do
     "#{cast_to_named_parameter(type)} => #{casted}"
   end
 
+  def cast_to_named_parameter(:position), do: "\"position\""
   def cast_to_named_parameter(type), do: type |> to_string
 end

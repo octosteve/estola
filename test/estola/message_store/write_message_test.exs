@@ -58,7 +58,7 @@ defmodule Estola.MessageStore.WriteMessageTest do
       })
 
     assert message |> WriteMessage.to_sql() ==
-             ~s[SELECT write_message('#{uuid}', 'someStream-123', 'SomeMessageType', '{"someAttribute":"some value"}', '{"metadataAttribute":"some meta data value"}', 1);]
+             ~s[SELECT write_message(id => '#{uuid}', stream_name => 'someStream-123', type => 'SomeMessageType', data => '{\"someAttribute\":\"some value\"}', metadata => '{\"metadataAttribute\":\"some meta data value\"}', expected_version => 1);]
   end
 
   test "sends in correct defaults when not provided" do
@@ -73,6 +73,6 @@ defmodule Estola.MessageStore.WriteMessageTest do
       })
 
     assert message |> WriteMessage.to_sql() ==
-             ~s[SELECT write_message('#{uuid}', 'someStream-123', 'SomeMessageType', '{"someAttribute":"some value"}', NULL, NULL);]
+             ~s[SELECT write_message(id => '#{uuid}', stream_name => 'someStream-123', type => 'SomeMessageType', data => '{\"someAttribute\":\"some value\"}', metadata => NULL, expected_version => NULL);]
   end
 end
