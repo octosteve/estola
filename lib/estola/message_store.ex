@@ -26,6 +26,18 @@ defmodule Estola.MessageStore do
     GenServer.call(__MODULE__, {:stream_version, message})
   end
 
+  def stream_id(message) do
+    GenServer.call(__MODULE__, {:stream_id, message})
+  end
+
+  def stream_cardinal_id(message) do
+    GenServer.call(__MODULE__, {:stream_cardinal_id, message})
+  end
+
+  def category_from_stream(message) do
+    GenServer.call(__MODULE__, {:category_from_stream, message})
+  end
+
   def init(:ok) do
     {:ok, pid} = Postgrex.start_link(@config)
     {:ok, %{pid: pid}, {:continue, :configure}}
@@ -119,6 +131,60 @@ defmodule Estola.MessageStore do
             state.pid,
             message_struct
             |> Estola.MessageStore.StreamVersion.to_sql(),
+            []
+          ).rows
+
+        {:reply, result, state}
+
+      {:error, changeset} ->
+        {:reply, changeset, state}
+    end
+  end
+
+  def handle_call({:stream_id, message}, _reply, state) do
+    case message |> Estola.MessageStore.StreamId.new() do
+      {:ok, message_struct} ->
+        [[result]] =
+          Postgrex.query!(
+            state.pid,
+            message_struct
+            |> Estola.MessageStore.StreamId.to_sql(),
+            []
+          ).rows
+
+        {:reply, result, state}
+
+      {:error, changeset} ->
+        {:reply, changeset, state}
+    end
+  end
+
+  def handle_call({:stream_cardinal_id, message}, _reply, state) do
+    case message |> Estola.MessageStore.StreamCardinalId.new() do
+      {:ok, message_struct} ->
+        [[result]] =
+          Postgrex.query!(
+            state.pid,
+            message_struct
+            |> Estola.MessageStore.StreamCardinalId.to_sql(),
+            []
+          ).rows
+
+        {:reply, result, state}
+
+      {:error, changeset} ->
+        {:reply, changeset, state}
+    end
+  end
+
+  def handle_call({:category_from_stream, message}, _reply, state) do
+    case message |> Estola.MessageStore.CategoryFromStream.new() do
+      {:ok, message_struct} ->
+        [[result]] =
+          Postgrex.query!(
+            state.pid,
+            message_struct
+            |> Estola.MessageStore.CategoryFromStream.to_sql(),
             []
           ).rows
 

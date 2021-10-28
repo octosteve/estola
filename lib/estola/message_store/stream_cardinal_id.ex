@@ -1,10 +1,10 @@
-defmodule Estola.MessageStore.StreamVersion do
+defmodule Estola.MessageStore.StreamCardinalId do
   use Ecto.Schema
   import Ecto.Changeset
 
   @field_order ~w[stream_name]a
   @primary_key false
-  @function_name :stream_version
+  @function_name :cardinal_id
 
   embedded_schema do
     field(:stream_name, :string)
