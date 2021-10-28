@@ -6,13 +6,34 @@ defmodule Estola.MessageStore do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def init(:ok) do
-    {:ok, pid} = Postgrex.start_link(config)
-    {:ok, %{postgrex_pid: pid},{:continue, :configure}}
+  def write_message(message) do
+    GenServer.call(__MODULE__, {:write_message, message})
   end
 
-  def handle_continue(:configure, state) do 
-    Postgrex.query!(state.postgrex_pid, "SET search_path TO message_store,public;",[])
-    {:noreply, state
+  def init(:ok) do
+    {:ok, pid} = Postgrex.start_link(@config)
+    {:ok, %{pid: pid}, {:continue, :configure}}
+  end
+
+  def handle_continue(:configure, state) do
+    Postgrex.query!(state.pid, "SET search_path TO #{@config[:database]},public;", [])
+    {:noreply, state}
+  end
+
+  def handle_call({:write_message, message}, _reply, state) do
+    case message |> Estola.MessageStore.WriteMessage.new() do
+      {:ok, message_struct} ->
+        Postgrex.query!(
+          state.pid,
+          message_struct
+          |> Estola.MessageStore.WriteMessage.to_sql(),
+          []
+        )
+
+        {:reply, :success, state}
+
+      {:error, changeset} ->
+        {:reply, changeset, state}
+    end
   end
 end
