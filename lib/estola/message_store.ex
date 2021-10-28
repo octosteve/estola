@@ -3,39 +3,39 @@ defmodule Estola.MessageStore do
   @config Application.get_env(:estola, :message_store)
 
   def start_link(_) do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+    GenServer.start_link(__MODULE__, :ok)
   end
 
-  def write_message(message) do
-    GenServer.call(__MODULE__, {:write_message, message})
+  def write_message(pid, message) do
+    GenServer.call(pid, {:write_message, message})
   end
 
-  def get_stream_messages(message) do
-    GenServer.call(__MODULE__, {:get_stream_messages, message})
+  def get_stream_messages(pid, message) do
+    GenServer.call(pid, {:get_stream_messages, message})
   end
 
-  def get_category_messages(message) do
-    GenServer.call(__MODULE__, {:get_category_messages, message})
+  def get_category_messages(pid, message) do
+    GenServer.call(pid, {:get_category_messages, message})
   end
 
-  def get_last_stream_message(message) do
-    GenServer.call(__MODULE__, {:get_last_stream_message, message})
+  def get_last_stream_message(pid, message) do
+    GenServer.call(pid, {:get_last_stream_message, message})
   end
 
-  def stream_version(message) do
-    GenServer.call(__MODULE__, {:stream_version, message})
+  def stream_version(pid, message) do
+    GenServer.call(pid, {:stream_version, message})
   end
 
-  def stream_id(message) do
-    GenServer.call(__MODULE__, {:stream_id, message})
+  def stream_id(pid, message) do
+    GenServer.call(pid, {:stream_id, message})
   end
 
-  def stream_cardinal_id(message) do
-    GenServer.call(__MODULE__, {:stream_cardinal_id, message})
+  def stream_cardinal_id(pid, message) do
+    GenServer.call(pid, {:stream_cardinal_id, message})
   end
 
-  def category_from_stream(message) do
-    GenServer.call(__MODULE__, {:category_from_stream, message})
+  def category_from_stream(pid, message) do
+    GenServer.call(pid, {:category_from_stream, message})
   end
 
   def init(:ok) do
@@ -44,7 +44,8 @@ defmodule Estola.MessageStore do
   end
 
   def handle_continue(:configure, state) do
-    Postgrex.query!(state.pid, "SET search_path TO #{@config[:database]},public;", [])
+    set_command = "SET search_path TO #{@config[:database]},public;"
+    Postgrex.query!(state.pid, set_command, [])
     {:noreply, state}
   end
 

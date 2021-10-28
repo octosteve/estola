@@ -24,7 +24,8 @@ defmodule Estola.MixProject do
     [
       {:postgrex, "~> 0.15.13"},
       {:jason, "~> 1.0"},
-      {:ecto, "~> 3.7.1"}
+      {:ecto, "~> 3.7.1"},
+      {:poolboy, "~> 1.5.1"}
     ]
   end
 end
