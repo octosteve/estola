@@ -1,7 +1,7 @@
 import Config
 
 config :estola, :message_store,
-  username: "postgres",
-  password: "postgres",
+  username: "message_store",
   database: "message_store",
-  hostname: "localhost"
+  hostname: "localhost",
+  pool_size: 10

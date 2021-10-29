@@ -39,14 +39,11 @@ defmodule Estola.MessageStore do
   end
 
   def init(:ok) do
-    {:ok, pid} = Postgrex.start_link(@config)
-    {:ok, %{pid: pid}, {:continue, :configure}}
-  end
+    _set_command = "SET search_path TO #{@config[:database]},public;"
 
-  def handle_continue(:configure, state) do
-    set_command = "SET search_path TO #{@config[:database]},public;"
-    Postgrex.query!(state.pid, set_command, [])
-    {:noreply, state}
+    {:ok, pid} = Postgrex.start_link(@config)
+
+    {:ok, %{pid: pid}}
   end
 
   def handle_call({:write_message, message}, _reply, state) do
