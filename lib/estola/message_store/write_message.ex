@@ -3,7 +3,7 @@ defmodule Estola.MessageStore.WriteMessage do
   import Ecto.Changeset
 
   @field_order [:id, :stream_name, :type, :data, :metadata, :expected_version]
-  @primary_key {:id, :binary_id, autogenrate: false}
+  #  @primary_key {:id, :binary_id, autogenrate: false}
   @function_name :write_message
 
   embedded_schema do
@@ -23,9 +23,18 @@ defmodule Estola.MessageStore.WriteMessage do
   def changeset(message, params \\ %{}) do
     message
     |> cast(params, [:id, :stream_name, :type, :data, :metadata, :expected_version])
+    |> handle_empty_id
     |> validate_required([:stream_name, :type, :data])
     |> validate_valid_id
     |> validate_valid_stream_name
+  end
+
+  def handle_empty_id(changeset) do
+    if get_change(changeset, :id) do
+      changeset
+    else
+      put_change(changeset, :id, Ecto.UUID.generate())
+    end
   end
 
   def validate_valid_id(changeset) do

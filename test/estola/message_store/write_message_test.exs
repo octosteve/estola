@@ -75,4 +75,15 @@ defmodule Estola.MessageStore.WriteMessageTest do
     assert message |> WriteMessage.to_sql() ==
              ~s[SELECT write_message(id => '#{uuid}', stream_name => 'someStream-123', type => 'SomeMessageType', data => '{\"someAttribute\":\"some value\"}', metadata => NULL, expected_version => NULL);]
   end
+
+  test "sets uuid if not passed in" do
+    {:ok, message} =
+      WriteMessage.new(%{
+        stream_name: "someStream-123",
+        type: "SomeMessageType",
+        data: %{"someAttribute" => "some value"}
+      })
+
+    assert Map.get(message, :id) != nil
+  end
 end
