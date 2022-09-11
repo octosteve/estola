@@ -1,6 +1,5 @@
 defmodule Estola.MessageStore do
   use GenServer
-  @config Application.compile_env(:estola, :message_store)
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -39,9 +38,9 @@ defmodule Estola.MessageStore do
   end
 
   def init(:ok) do
-    _set_command = "SET search_path TO #{@config[:database]},public;"
+    _set_command = "SET search_path TO #{config()[:database]},public;"
 
-    {:ok, pid} = Postgrex.start_link(@config)
+    {:ok, pid} = Postgrex.start_link(config())
 
     {:ok, %{pid: pid}}
   end
@@ -191,5 +190,9 @@ defmodule Estola.MessageStore do
       {:error, changeset} ->
         {:reply, changeset, state}
     end
+  end
+
+  defp config do
+    Application.get_env(:estola, :message_store)
   end
 end

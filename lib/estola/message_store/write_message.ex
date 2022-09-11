@@ -3,7 +3,6 @@ defmodule Estola.MessageStore.WriteMessage do
   import Ecto.Changeset
 
   @field_order [:id, :stream_name, :type, :data, :metadata, :expected_version]
-  #  @primary_key {:id, :binary_id, autogenrate: false}
   @function_name :write_message
 
   embedded_schema do
