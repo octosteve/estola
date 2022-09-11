@@ -1,6 +1,6 @@
 defmodule Estola.MessageStore do
   use GenServer
-  @config Application.get_env(:estola, :message_store)
+  @config Application.compile_env(:estola, :message_store)
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
